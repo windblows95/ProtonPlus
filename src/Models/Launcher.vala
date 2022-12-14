@@ -225,7 +225,7 @@ namespace ProtonPlus.Models {
                 CleanList (launchers);
             }
 
-            return launchers;
+            return (owned) launchers;
         }
     }
 }
