@@ -59,6 +59,7 @@ namespace ProtonPlus.Models {
                 counter++;
             });
 
+            uint test = position;
             return position;
         }
 
