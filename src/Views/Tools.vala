@@ -17,7 +17,7 @@ namespace ProtonPlus.Views {
         public Tools (Gtk.ApplicationWindow window, ref Stores.Preferences preferences) {
             this.window = window;
             this.preferences = preferences;
-            this.launchers = Models.Launcher.GetAll ();
+            this.launchers = Models.Launcher.GetAll (true);
             this.firstRun = true;
         }
 

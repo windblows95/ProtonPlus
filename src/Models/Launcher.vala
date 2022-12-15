@@ -73,12 +73,16 @@ namespace ProtonPlus.Models {
             return store;
         }
 
-        private static void CleanList (GLib.List<Launcher> launchers) {
+        private static GLib.List<Launcher> CleanList (GLib.List<Launcher> launchers) {
+            var installedLaunchers = new GLib.List<Launcher> ();
+
             launchers.@foreach ((launcher) => {
-                if (launcher.Installed != true) {
-                    launchers.remove (launcher);
+                if (launcher.Installed == true) {
+                    installedLaunchers.append (launcher);
                 }
             });
+
+            return (owned) installedLaunchers;
         }
 
         public static GLib.List GetAll (bool installedOnly = false) {
@@ -222,7 +226,7 @@ namespace ProtonPlus.Models {
             // ));
 
             if (installedOnly) {
-                CleanList (launchers);
+                launchers = CleanList (launchers);
             }
 
             return (owned) launchers;
