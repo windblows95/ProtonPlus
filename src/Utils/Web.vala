@@ -15,6 +15,8 @@ namespace ProtonPlus.Utils {
 
         public static int Download (string download_url, string download_path) {
             try {
+                string url = download_url;
+                string path = download_path;
                 var file_from_http = GLib.File.new_for_uri (download_url);
                 GLib.File local_file = GLib.File.new_for_path (download_path);
                 Stores.Threads store = Stores.Threads.instance ();
