@@ -74,7 +74,19 @@ namespace ProtonPlus.Utils {
         public static void Delete (string path) {
             try {
                 var file = GLib.File.new_for_path (path);
-                file.trash ();
+                if (IsDirectory (path)) {
+                    var enumerator = file.enumerate_children ("standard::*", FileQueryInfoFlags.NOFOLLOW_SYMLINKS);
+
+                    FileInfo info = null;
+                    while ((info = enumerator.next_file ()) != null) {
+                        var subFile = file.resolve_relative_path (info.get_name ());
+                        Delete (subFile.get_path ());
+                    }
+
+                    file.@delete ();
+                } else {
+                    file.@delete ();
+                }
             } catch (GLib.Error e) {
                 stderr.printf (e.message + "\n");
             }
