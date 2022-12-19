@@ -184,11 +184,10 @@ namespace ProtonPlus.Views {
             var dialogDelete = new Widgets.ProtonMessageDialog (window, null, _ ("Are you sure you want to delete the selected tool?"), Widgets.ProtonMessageDialog.MessageDialogType.NO_YES, null);
             dialogDelete.response.connect ((response) => {
                 if (response == "yes") {
-                    GLib.Timeout.add (1000, () => {
+                    new Thread<void> ("delete", () => {
                         Utils.File.Delete (currentLauncher.Directory + "/" + release.Title);
                         crInstallLocation.notify_property ("selected");
-                        return false;
-                    }, 2);
+                    });
                 }
             });
         }
