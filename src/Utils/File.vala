@@ -72,8 +72,34 @@ namespace ProtonPlus.Utils {
         }
 
         public static void Delete (string path) {
-            string bob = path;
-            Posix.system (@"rm -rf \"$path\"");
+            try {
+                var file = GLib.File.new_for_path (path);
+                file.trash ();
+            } catch (GLib.Error e) {
+                stderr.printf (e.message + "\n");
+                DeleteRollback (path);
+            }
+        }
+
+        private static void DeleteRollback (string path) {
+            try {
+                var file = GLib.File.new_for_path (path);
+                if (IsDirectory (path)) {
+                    var enumerator = file.enumerate_children ("standard::name", FileQueryInfoFlags.NOFOLLOW_SYMLINKS);
+
+                    FileInfo info = null;
+                    while ((info = enumerator.next_file ()) != null) {
+                        var subFile = file.resolve_relative_path (info.get_name ());
+                        Delete (subFile.get_path ());
+                    }
+
+                    file.@delete ();
+                } else {
+                    file.@delete ();
+                }
+            } catch (GLib.Error e) {
+                stderr.printf (e.message + "\n");
+            }
         }
 
         public static void Rename (string sourcePath, string destinationPath) {
@@ -109,7 +135,7 @@ namespace ProtonPlus.Utils {
             try {
                 var file = GLib.File.new_for_path (path);
                 if (file.query_exists ()) {
-                    var info = file.query_info ("standard::*", FileQueryInfoFlags.NONE);
+                    var info = file.query_info ("standard::type", FileQueryInfoFlags.NONE);
                     if (info.get_file_type () == FileType.DIRECTORY) return true;
                 }
                 return false;
@@ -126,7 +152,7 @@ namespace ProtonPlus.Utils {
                 if (IsDirectory (path)) {
                     var root = GLib.File.new_for_path (path);
 
-                    var enumerator = root.enumerate_children ("standard::*", FileQueryInfoFlags.NOFOLLOW_SYMLINKS);
+                    var enumerator = root.enumerate_children ("standard::type", FileQueryInfoFlags.NOFOLLOW_SYMLINKS);
 
                     FileInfo info = null;
                     while ((info = enumerator.next_file ()) != null) {
