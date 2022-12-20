@@ -19,8 +19,8 @@ namespace ProtonPlus.Utils {
                 string path = download_path;
                 var file_from_http = GLib.File.new_for_uri (download_url);
                 GLib.File local_file = GLib.File.new_for_path (download_path);
-                Stores.Threads store = Stores.Threads.instance ();
                 file_from_http.copy (local_file, FileCopyFlags.OVERWRITE, null, (current, total) => {
+                    Stores.Threads store = Stores.Threads.instance ();
                     store.ProgressBar = (current + 0.0d) / (total + 0.0d);
                 });
                 return 0;
