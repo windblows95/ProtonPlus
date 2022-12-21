@@ -33,11 +33,30 @@ namespace ProtonPlus.Windows {
         void btnClean_Clicked () {
             new Widgets.ProtonMessageDialog (this, null, _ ("Are you sure you want to clean this launcher? WARNING: It will delete every installed tools from the launcher!"), Widgets.ProtonMessageDialog.MessageDialogType.NO_YES, (response) => {
                 if (response == "yes") {
-                    new Thread<void> ("delete", () => {
-                        Utils.File.Delete (currentLauncher.Directory);
-                        Utils.File.CreateDirectory (currentLauncher.Directory);
-                        this.response (Gtk.ResponseType.APPLY);
-                    });
+                    var tools = Utils.File.ListDirectoryFolders (currentLauncher.Directory);
+                    var threads = Stores.Threads.instance ();
+                    threads.CleanupDone = false;
+
+                    foreach (var dir in tools) {
+                        new Thread<void> (@"delete-$dir", () => {
+                            Utils.File.Delete (currentLauncher.Directory + "/" + dir);
+                            threads.CleanupDone = true;
+                            // this.response (Gtk.ResponseType.APPLY);
+                        });
+                    }
+
+                    uint counter = 0;
+                    GLib.Timeout.add (1000, () => {
+                        if (threads.CleanupDone) {
+                            if (counter++ < tools.length ()) {
+                                this.response (Gtk.ResponseType.APPLY);
+                                threads.CleanupDone = false;
+                            } else {
+                                return false;
+                            }
+                        }
+                        return true;
+                    }, 1);
                 }
             });
         }

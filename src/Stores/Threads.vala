@@ -11,5 +11,7 @@ namespace ProtonPlus.Stores {
 
         public List<Models.Release> Releases;
         public bool ReleaseRequestDone;
+
+        public bool CleanupDone;
     }
 }
