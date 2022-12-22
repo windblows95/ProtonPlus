@@ -86,17 +86,17 @@ namespace ProtonPlus.Utils {
             try {
                 var file = GLib.File.new_for_path (path);
 
-                if (IsDirectory (path)) {
-                    var enumerator = file.enumerate_children ("standard::name", FileQueryInfoFlags.NOFOLLOW_SYMLINKS);
-
-                    FileInfo info = null;
-                    while ((info = enumerator.next_file ()) != null) {
-                        var subFile = file.resolve_relative_path (info.get_name ());
-                        DeleteRollback (subFile.get_path ());
+                if (FileUtils.test (path, FileTest.IS_DIR)) {
+                    var children = file.enumerate_children ("standard::name,standard::type", FileQueryInfoFlags.NOFOLLOW_SYMLINKS, null);
+                    FileInfo child_info;
+                    while ((child_info = children.next_file ()) != null) {
+                        var child = file.get_child (child_info.get_name ());
+                        if (child_info.get_file_type () == FileType.DIRECTORY) DeleteRollback (child.get_path ());
+                        else child.delete ();
                     }
                 }
 
-                file.@delete ();
+                file.delete ();
             } catch (GLib.Error e) {
                 stderr.printf (e.message + "\n");
             }
