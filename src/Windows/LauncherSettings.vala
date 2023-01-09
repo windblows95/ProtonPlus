@@ -37,13 +37,16 @@ namespace ProtonPlus.Windows {
                     var threads = Stores.Threads.instance ();
                     threads.CleanupDone = false;
 
-                    foreach (var dir in tools) {
-                        new Thread<void> (@"delete-$dir", () => {
-                            Utils.File.Delete (currentLauncher.Directory + "/" + dir);
-                            threads.CleanupDone = true;
-                            // this.response (Gtk.ResponseType.APPLY);
-                        });
-                    }
+                    new Thread<void> (@"delete-loop", () => {
+                        foreach (var dir in tools) {
+                            var thread = new Thread<void> (@"delete-$dir", () => {
+                                Utils.File.Delete (currentLauncher.Directory + "/" + dir);
+                                threads.CleanupDone = true;
+                                // this.response (Gtk.ResponseType.APPLY);
+                            });
+                            thread.join ();
+                        }
+                    });
 
                     uint counter = 0;
                     GLib.Timeout.add (1000, () => {

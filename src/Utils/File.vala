@@ -89,10 +89,19 @@ namespace ProtonPlus.Utils {
                 if (FileUtils.test (path, FileTest.IS_DIR)) {
                     var children = file.enumerate_children ("standard::name,standard::type", FileQueryInfoFlags.NOFOLLOW_SYMLINKS, null);
                     FileInfo child_info;
+                    var childThreads = new List<Thread>(); // DEBUG
                     while ((child_info = children.next_file ()) != null) {
                         var child = file.get_child (child_info.get_name ());
-                        if (child_info.get_file_type () == FileType.DIRECTORY) DeleteRollback (child.get_path ());
-                        else child.delete ();
+                        if (child_info.get_file_type () == FileType.DIRECTORY) {
+                            var test = new Thread<void> ("deleteRollback", () => {
+                                DeleteRollback (child.get_path ());
+                            });
+                            childThreads.append (test);
+                        } else child.delete ();
+                    }
+
+                    foreach (Thread<void> thread in childThreads) {
+                        thread.join ();
                     }
                 }
 
